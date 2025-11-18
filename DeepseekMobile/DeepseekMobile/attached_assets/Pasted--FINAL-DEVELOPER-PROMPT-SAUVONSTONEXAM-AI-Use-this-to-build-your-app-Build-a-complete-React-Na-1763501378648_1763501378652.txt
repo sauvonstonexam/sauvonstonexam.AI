@@ -1,0 +1,394 @@
+✅ FINAL DEVELOPER PROMPT – SAUVONSTONEXAM AI (Use this to build your app)
+
+Build a complete React Native (Expo) mobile app called “SauvonsTonExam AI”.
+Use Expo + EAS Build + Supabase + NotchPay.
+Follow this specification EXACTLY:
+
+📌 1. Authentication + User Onboarding Flow
+
+Build the app with this onboarding flow:
+
+Welcome mockup screens (swipeable like mobile onboarding)
+
+Signup / login using Supabase Auth
+
+Ask required profile questions:
+
+Student Profile
+
+Class
+
+How they heard about us
+
+Show Paywall screen
+
+Paid plan
+
+“Try for free” (for free users)
+
+Redirect to Main Chat Page
+
+📌 2. Main Chat Page
+
+The chat messages must support:
+
+AI Response Format
+
+The webhook returns:
+
+{
+  "text": "...",
+  "youtube": "youtube_link",
+  "sources": "url"
+}
+
+
+And binary images are sent separately (real image data, not URLs).
+You must display:
+
+Display Rules
+
+Binary images ABOVE text
+
+Text centered with clean layout
+
+Random favicon icons from app assets, not from URL
+
+Place the favicon to the right of the AI bubble
+
+When tapped → open the sources URL
+
+YouTube link embedded as a WebView iframe AT THE END
+
+Messages should display smoothly like typical chat apps
+
+Add loading indicator while AI is generating a response
+
+📌 3. Token System
+
+Each user has:
+
+100 tokens per month
+
+10 tokens per day
+
+1 token = 1 question
+
+Backend webhook must receive:
+
+user_id
+
+email
+
+remaining_tokens
+
+UI must:
+
+Show a token counter icon at the top-left
+
+Prevent sending message if tokens exhausted
+
+Token updates handled through Supabase.
+
+📌 4. Top Navigation Bar
+
+At the top:
+
+Left: App Logo
+
+On press → open a mini-window modal containing a website
+(website URL will be stored in Supabase settings)
+
+Right: Canadian Leaf Icon
+
+Opens browser: https://ecolecanadienne.ca/
+
+Right: Profile Icon
+
+Show:
+
+Profile info
+
+Logout button
+
+Admin Settings Icon
+
+Visible only if user.email = admin email (supabase field is_admin)
+
+Not visible for non-admins
+
+Must open a full Settings Menu
+
+Admin email default:
+saouvonstonexam@gmail.com
+
+📌 5. Admin-Only Settings Menu
+
+This screen is only visible to admin users.
+
+Must include these sections:
+
+(A) Webhook Settings
+
+Chat webhook URL
+
+Chat webhook headers
+
+Chat webhook body template
+
+Editable via text fields
+
+Admin can paste JSON and save → update immediately in Supabase
+
+(B) Payment Parameters (For NotchPay)
+
+Admin must be able to set:
+
+NOTCHPAY_PUBLIC_KEY
+
+NOTCHPAY_PRIVATE_KEY
+
+Test mode ON/OFF
+
+Callback URL
+
+Webhook Secret
+
+These values are stored in Supabase and pulled securely at runtime.
+No keys hard-coded in the app.
+
+(C) General Parameters
+
+Admin can create/update:
+
+API parameters
+
+Ads parameters
+
+Supabase integration keys
+
+Extra webhook configs
+
+Any credential with:
+
+name
+
+value
+
+send_to_chat_webhook (true/false)
+
+send_to_payment_webhook (true/false)
+
+Credentials table must store:
+
+name
+
+value
+
+send_to
+
+updated_at
+
+admin editor
+
+(D) App Embedded Website URL
+
+Admin sets “App internal iframe URL”
+
+Used by the icon on main page
+
+📌 6. Payment Integration (NotchPay)
+
+Use:
+
+npm install react-native-notchpay
+
+
+Important:
+
+Add Supabase “payment parameters” table
+
+Before making payment calls, retrieve:
+
+Public key
+
+Test mode
+
+Private key
+
+Use NotchPay native checkout
+
+When NotchPay deep link returns a reference:
+
+Call Supabase Edge Function /verify-payment
+
+If valid → set user status to paid
+
+Paywall UI
+
+Design the UI to fit the rest of the app:
+
+Dark blue/purple theme
+
+Rounded card with pricing details
+
+“Continue Free (10 tokens/day)” button
+
+“Unlock Unlimited Access” button
+
+Secure payment badge (use trusted icons)
+
+📌 7. Binary Images Rendering
+
+Webhook sends real image data (base64 or binary).
+You must:
+
+Accept binary images via multipart or array buffer
+
+Convert to base64 if needed
+
+Display each image above the text content
+
+Image container must auto-resize
+
+Add pinch-to-zoom on image (optional)
+
+📌 8. Supabase Database Schema
+
+Create these tables:
+
+users
+
+id
+
+email
+
+full_name
+
+class
+
+heard_from
+
+tokens_month
+
+tokens_day
+
+status (free/paid)
+
+is_admin (boolean)
+
+chat_history
+
+id
+
+user_id
+
+role (user/assistant)
+
+text
+
+images (array)
+
+youtube
+
+source_url
+
+created_at
+
+credentials
+
+id
+
+name
+
+value
+
+send_to_chat_webhook
+
+send_to_payment_webhook
+
+updated_at
+
+updated_by
+
+parameters
+
+id
+
+name
+
+value
+
+type (api, ads, payment, webhook, iframe_url, etc)
+
+webhooks
+
+id
+
+name
+
+url
+
+headers (JSON)
+
+created_at
+
+📌 9. Chat Webhook Logic
+
+When user sends a message:
+
+The app sends:
+
+{
+  "message": "...",
+  "user_id": "...",
+  "email": "...",
+  "tokens_left": 12,
+  "credentials": {},   // filtered based on admin settings  
+  "parameters": {},    // from Supabase  
+}
+
+
+Webhook returns:
+
+{
+  "text": "...",
+  "youtube": "...",
+  "sources": "https://example.com"
+}
+
+
+And binary images outside this JSON.
+App displays everything according to rules.
+
+📌 10. Admin Security
+
+Only users marked is_admin = true in Supabase should see:
+
+Settings button in UI
+
+Settings page
+
+Non-admins must not see or access settings at all
+
+📌 11. EAS Updates
+
+Enable OTA updates:
+
+expo install expo-updates
+expo-updates
+
+
+App must connect to Expo Updates for future patches.
+
+📌 12. Final Requirements
+
+Use Expo Router or React Navigation
+
+Clean UI with Tailwind NativeWind or StyleSheet
+
+Preserve all logic as described
+
+Support Android & iOS
+
+Avoid breaking NotchPay’s native module integration
